@@ -1,0 +1,3238 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background: radial-gradient(circle at center, #0b1021 0%, #03050a 100%);
+  color: #f1f5f9;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+#canvas-container {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+}
+
+/* Üst Bar */
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 32px;
+  pointer-events: none;
+}
+
+.brand {
+  pointer-events: auto;
+}
+
+.badge {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid #38bdf8;
+  color: #38bdf8;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  letter-spacing: 1px;
+}
+
+.brand h1 {
+  font-size: 20px;
+  margin-top: 6px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+#reset-btn {
+  pointer-events: auto;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  color: #f8fafc;
+  padding: 10px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+
+#reset-btn:hover {
+  background: #38bdf8;
+  color: #0f172a;
+  border-color: #38bdf8;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Açılış Alt İpucu */
+.intro-hint {
+  position: fixed;
+  bottom: 125px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  padding: 12px 24px;
+  border-radius: 999px;
+  font-size: 15px;
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+}
+
+/* Yüzeydeki Araç Pinleri */
+#pins-container {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.surface-pin {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 158px;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1.5px solid #f59e0b;
+  color: #fef3c7;
+  padding: 6px 6px 8px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 16px rgba(245, 158, 11, 0.45);
+  transition: left 0.14s ease-out, top 0.14s ease-out, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), background 0.25s ease, box-shadow 0.25s ease;
+}
+
+.pin-thumb {
+  width: 100%;
+  height: 92px;
+  border-radius: 9px;
+  object-fit: cover;
+  border: 1px solid rgba(245, 158, 11, 0.6);
+  flex-shrink: 0;
+  background: #0f172a;
+  filter: brightness(1.18) contrast(1.1);
+  transition: transform 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
+}
+
+.pin-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  white-space: normal;
+  line-height: 1.25;
+  padding: 0 4px;
+}
+
+.surface-pin:hover,
+.surface-pin.active {
+  transform: translate(-50%, -50%) scale(1.14);
+  background: #f59e0b;
+  color: #0f172a;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8), 0 0 22px rgba(245, 158, 11, 0.75);
+  z-index: 25;
+}
+
+.surface-pin:hover .pin-thumb,
+.surface-pin.active .pin-thumb {
+  border-color: #0f172a;
+  filter: brightness(1.24) contrast(1.12);
+}
+
+.surface-pin.lifted,
+.surface-pin.lifted:hover,
+.surface-pin.lifted.active {
+  transform: translate(-50%, calc(-50% - 82px)) scale(1.15);
+  transition: left 0.14s ease-out, top 0.14s ease-out, transform 0.65s cubic-bezier(0.22, 1, 0.36, 1), background 0.25s ease, box-shadow 0.3s ease;
+  animation: liftedFloat 2.4s ease-in-out 0.65s infinite;
+  box-shadow: 0 22px 38px rgba(0, 0, 0, 0.85), 0 0 28px rgba(245, 158, 11, 0.85);
+  z-index: 26;
+}
+
+@keyframes liftedFloat {
+
+  0%,
+  100% {
+    transform: translate(-50%, calc(-50% - 82px)) scale(1.15);
+  }
+
+  50% {
+    transform: translate(-50%, calc(-50% - 89px)) scale(1.15);
+  }
+}
+
+/* Sağ Bilgi Paneli */
+.info-panel {
+  position: fixed;
+  top: 85px;
+  right: -540px;
+  /* Başlangıçta ekran dışında */
+  bottom: 102px;
+  width: 500px;
+  max-width: 90vw;
+  z-index: 10;
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 20px;
+  padding: 28px;
+  backdrop-filter: blur(16px);
+  overflow-y: auto;
+  transition: right 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.6);
+}
+
+.info-panel.open {
+  right: 28px;
+}
+
+.panel-subtitle {
+  color: #38bdf8;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  font-weight: 700;
+}
+
+.panel-title {
+  font-size: 26px;
+  margin: 6px 0 14px;
+  color: #ffffff;
+}
+
+.panel-desc {
+  color: #cbd5e1;
+  line-height: 1.65;
+  font-size: 14.5px;
+  margin-bottom: 20px;
+}
+
+/* Araç Kartları Listesi */
+.equipment-list-title {
+  font-size: 14px;
+  color: #94a3b8;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  padding-bottom: 6px;
+}
+
+.eq-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(30, 41, 59, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.eq-card-thumb {
+  width: 104px;
+  height: 74px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  flex-shrink: 0;
+  background: #020617;
+  filter: brightness(1.15) contrast(1.08);
+}
+
+.eq-card-info {
+  min-width: 0;
+}
+
+.eq-card:hover {
+  border-color: #f59e0b;
+  background: rgba(30, 41, 59, 0.95);
+  transform: translateX(4px);
+}
+
+.eq-card h4 {
+  color: #fbbf24;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.eq-card span {
+  font-size: 12.5px;
+  color: #94a3b8;
+}
+
+/* Tekil Araç Hikâye Detayı */
+.eq-hero-media {
+  margin: 12px 0 16px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  background: rgba(2, 6, 23, 0.75);
+}
+
+.eq-hero-img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  display: block;
+  filter: brightness(1.12) contrast(1.06);
+}
+
+.eq-hero-caption {
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #94a3b8;
+  border-top: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.story-box {
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.12) 0%, rgba(15, 23, 42, 0.78) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-left: 4px solid #f59e0b;
+  padding: 20px 22px;
+  border-radius: 14px;
+  margin: 18px 0 8px;
+  font-style: normal;
+  color: #f8fafc;
+}
+
+.story-header {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #fbbf24;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.story-paragraph {
+  font-size: 15px;
+  line-height: 1.78;
+  color: #fef3c7;
+  margin-bottom: 14px;
+}
+
+.story-paragraph:last-child {
+  margin-bottom: 0;
+}
+
+.meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.meta-item {
+  background: rgba(30, 41, 59, 0.7);
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+
+.meta-item label {
+  display: block;
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.meta-item strong {
+  font-size: 13.5px;
+  color: #f8fafc;
+}
+
+.back-to-planet-btn {
+  background: transparent;
+  border: 1px solid #38bdf8;
+  color: #38bdf8;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+.back-to-planet-btn:hover {
+  background: rgba(56, 189, 248, 0.15);
+}
+
+/* Çocuk Dostu Özellikler, Zaman Tüneli ve İlginç Bilgi Kutusu */
+.features-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.feature-chip {
+  background: rgba(30, 41, 59, 0.72);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #e2e8f0;
+}
+
+.adventure-timeline {
+  position: relative;
+  padding-left: 18px;
+  margin-bottom: 18px;
+  border-left: 2px solid rgba(245, 158, 11, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.timeline-step {
+  position: relative;
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.timeline-step::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 16px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #f59e0b;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.8);
+}
+
+.timeline-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #38bdf8;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 4px;
+}
+
+.timeline-step h4 {
+  font-size: 14.5px;
+  color: #fbbf24;
+  margin-bottom: 5px;
+}
+
+.timeline-step p {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #cbd5e1;
+}
+
+.fun-fact-box {
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 18px;
+}
+
+.fun-fact-box strong {
+  display: block;
+  color: #7dd3fc;
+  font-size: 13.5px;
+  margin-bottom: 4px;
+}
+
+.fun-fact-box p {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #e0f2fe;
+}
+
+/* Çocuk Dostu Çizgi Film Astronot ve Ayak İzleri */
+.astronaut-wrap {
+  position: absolute;
+  width: 96px;
+  height: 110px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 24;
+  transition: left 0.16s ease-out, top 0.16s ease-out;
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.72));
+}
+
+.astro-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.astro-arm-left {
+  transform-origin: 50px 84px;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.astro-arm-right {
+  transform-origin: 84px 83px;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.astro-leg-left {
+  transform-origin: 58px 108px;
+}
+
+.astro-leg-right {
+  transform-origin: 75px 108px;
+}
+
+.astronaut-wrap.walking .astro-svg {
+  animation: astroHop 0.31s ease-in-out infinite;
+}
+
+.astronaut-wrap.walking .astro-leg-left {
+  animation: astroStrideA 0.31s ease-in-out infinite alternate;
+}
+
+.astronaut-wrap.walking .astro-leg-right {
+  animation: astroStrideB 0.31s ease-in-out infinite alternate;
+}
+
+.astronaut-wrap.walking .astro-arm-left {
+  animation: astroStrideB 0.31s ease-in-out infinite alternate;
+}
+
+.astronaut-wrap.walking .astro-arm-right {
+  animation: astroStrideA 0.31s ease-in-out infinite alternate;
+}
+
+.astronaut-wrap.lifting .astro-arm-left {
+  transform: rotate(28deg);
+}
+
+.astronaut-wrap.lifting .astro-arm-right {
+  transform: rotate(-138deg);
+}
+
+.astronaut-wrap.lifting .astro-svg {
+  animation: astroCheer 2.4s ease-in-out infinite;
+}
+
+.bootprint-mark {
+  position: absolute;
+  width: 11px;
+  height: 7px;
+  border-radius: 4px;
+  transform: translate(-50%, -50%);
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px dashed rgba(248, 250, 252, 0.45);
+  pointer-events: none;
+  z-index: 4;
+  animation: fadeBootprint 1.8s ease-out forwards;
+}
+
+.dust-puff {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0.4);
+  background: radial-gradient(circle, rgba(241, 245, 249, 0.55) 0%, rgba(148, 163, 184, 0) 72%);
+  pointer-events: none;
+  z-index: 4;
+  animation: dustBurst 0.55s ease-out forwards;
+}
+
+@keyframes astroHop {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+
+  50% {
+    transform: translateY(-7px) rotate(3deg);
+  }
+}
+
+@keyframes astroStrideA {
+  from {
+    transform: rotate(-22deg);
+  }
+
+  to {
+    transform: rotate(22deg);
+  }
+}
+
+@keyframes astroStrideB {
+  from {
+    transform: rotate(22deg);
+  }
+
+  to {
+    transform: rotate(-22deg);
+  }
+}
+
+@keyframes astroCheer {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes fadeBootprint {
+  0% {
+    opacity: 0.9;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes dustBurst {
+  0% {
+    opacity: 0.85;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -70%) scale(2.1);
+  }
+}
+
+/* Alt Yatay Kaydırılabilir Kozmik Zaman Çubuğu */
+.cosmic-timeline {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100vw - 32px);
+  width: 780px;
+  padding: 10px 14px;
+  background: rgba(10, 17, 36, 0.82);
+  border: 1px solid rgba(56, 189, 248, 0.32);
+  border-radius: 999px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65), 0 0 22px rgba(56, 189, 248, 0.16);
+}
+
+.timeline-nav-btn {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  background: rgba(15, 23, 42, 0.9);
+  color: #7dd3fc;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.timeline-nav-btn:hover:not(:disabled) {
+  background: #38bdf8;
+  color: #0f172a;
+  transform: scale(1.08);
+}
+
+.timeline-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.timeline-track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 4px 10px;
+  scrollbar-width: none;
+}
+
+.timeline-track::-webkit-scrollbar {
+  display: none;
+}
+
+.timeline-track::before {
+  content: '';
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 17px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.2), rgba(245, 158, 11, 0.65), rgba(56, 189, 248, 0.35));
+  pointer-events: none;
+}
+
+.timeline-node {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  min-width: 72px;
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  transition: transform 0.22s ease, color 0.22s ease;
+}
+
+.timeline-node:hover {
+  transform: translateY(-2px);
+  color: #f8fafc;
+}
+
+.node-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #0f172a;
+  border: 2.5px solid #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.65);
+  transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.timeline-node[data-planet='mars'] .node-dot {
+  border-color: #fb923c;
+  box-shadow: 0 0 10px rgba(251, 146, 60, 0.65);
+}
+
+.node-year {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+}
+
+.node-planet {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  opacity: 0.72;
+}
+
+.timeline-node.active {
+  color: #fbbf24;
+  transform: translateY(-2px) scale(1.06);
+}
+
+.timeline-node.active .node-dot {
+  background: #f59e0b;
+  border-color: #fef3c7;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.95), 0 0 26px rgba(245, 158, 11, 0.55);
+  animation: dotPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.24);
+  }
+}
+
+/* Üst-Orta Nostaljik Gazete Manşeti / Dijital Anı Kartı */
+.nostalgia-card {
+  position: fixed;
+  top: 72px;
+  right: 548px;
+  width: 310px;
+  max-width: calc(100vw - 48px);
+  z-index: 11;
+  border-radius: 10px;
+  padding: 15px 17px;
+  transform: rotate(7deg);
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.nostalgia-card.card-animate {
+  animation: nostalgiaReveal 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes nostalgiaReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) rotate(7deg) scale(0.95);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotate(7deg) scale(1);
+  }
+}
+
+.nostalgia-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 7px;
+  margin-bottom: 9px;
+}
+
+.nostalgia-stamp {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.nostalgia-year {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.nostalgia-headline {
+  font-size: 17px;
+  line-height: 1.25;
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+.nostalgia-section {
+  font-size: 12.5px;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.nostalgia-section:last-child {
+  margin-bottom: 0;
+}
+
+.nostalgia-section strong {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+/* 1966-1976 Retro Gazete Baskısı */
+.nostalgia-card.retro-60s,
+.nostalgia-card.retro-70s {
+  background: #f3e9d2;
+  color: #1c1611;
+  border: 2px solid #2b2118;
+  border-radius: 4px;
+  font-family: Georgia, 'Times New Roman', serif;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.7), inset 0 0 22px rgba(139, 109, 67, 0.25);
+}
+
+.nostalgia-card.retro-60s *,
+.nostalgia-card.retro-70s * {
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+.nostalgia-card.retro-60s .nostalgia-top,
+.nostalgia-card.retro-70s .nostalgia-top {
+  border-bottom: 3px double #2b2118;
+}
+
+.nostalgia-card.retro-60s .nostalgia-stamp,
+.nostalgia-card.retro-70s .nostalgia-stamp {
+  color: #7c2d12;
+  border: 1px dashed #7c2d12;
+  padding: 2px 6px;
+}
+
+.nostalgia-card.retro-60s .nostalgia-year,
+.nostalgia-card.retro-70s .nostalgia-year {
+  background: #2b2118;
+  color: #f3e9d2;
+}
+
+.nostalgia-card.retro-60s .nostalgia-headline,
+.nostalgia-card.retro-70s .nostalgia-headline {
+  color: #0f0b08;
+  border-bottom: 1px solid rgba(43, 33, 24, 0.35);
+  padding-bottom: 8px;
+}
+
+.nostalgia-card.retro-60s .nostalgia-section strong,
+.nostalgia-card.retro-70s .nostalgia-section strong {
+  color: #7c2d12;
+}
+
+/* 1997-2004 Erken Dönem İnternet Haber Portalı */
+.nostalgia-card.digital-90s,
+.nostalgia-card.digital-2000s {
+  background: #081420;
+  color: #e0f2fe;
+  border: 2px solid #22d3ee;
+  border-radius: 4px;
+  box-shadow: 4px 4px 0 #0e7490, 0 12px 28px rgba(0, 0, 0, 0.75);
+  font-family: 'Courier New', Consolas, monospace;
+}
+
+.nostalgia-card.digital-90s *,
+.nostalgia-card.digital-2000s * {
+  font-family: 'Courier New', Consolas, monospace;
+}
+
+.nostalgia-card.digital-90s .nostalgia-top,
+.nostalgia-card.digital-2000s .nostalgia-top {
+  background: linear-gradient(90deg, #0e7490, #1e3a8a);
+  margin: -15px -17px 10px;
+  padding: 7px 12px;
+  border-bottom: 2px solid #22d3ee;
+}
+
+.nostalgia-card.digital-90s .nostalgia-stamp,
+.nostalgia-card.digital-2000s .nostalgia-stamp {
+  color: #67e8f9;
+}
+
+.nostalgia-card.digital-90s .nostalgia-year,
+.nostalgia-card.digital-2000s .nostalgia-year {
+  background: #f59e0b;
+  color: #0f172a;
+  border-radius: 0;
+}
+
+.nostalgia-card.digital-90s .nostalgia-headline,
+.nostalgia-card.digital-2000s .nostalgia-headline {
+  color: #67e8f9;
+}
+
+.nostalgia-card.digital-90s .nostalgia-section strong,
+.nostalgia-card.digital-2000s .nostalgia-section strong {
+  color: #fbbf24;
+}
+
+/* 2008-2021 Fütüristik Cam Efektli Dijital Uzay Günlüğü */
+.nostalgia-card.modern-holo {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.86) 0%, rgba(8, 47, 73, 0.78) 100%);
+  color: #f0f9ff;
+  border: 1px solid rgba(56, 189, 248, 0.65);
+  border-radius: 16px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 14px 32px rgba(2, 6, 23, 0.82), 0 0 24px rgba(56, 189, 248, 0.28);
+}
+
+.nostalgia-card.modern-holo .nostalgia-top {
+  border-bottom: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.nostalgia-card.modern-holo .nostalgia-stamp {
+  color: #38bdf8;
+}
+
+.nostalgia-card.modern-holo .nostalgia-year {
+  background: rgba(56, 189, 248, 0.2);
+  border: 1px solid #38bdf8;
+  color: #e0f2fe;
+  border-radius: 999px;
+}
+
+.nostalgia-card.modern-holo .nostalgia-headline {
+  color: #ffffff;
+  text-shadow: 0 0 14px rgba(56, 189, 248, 0.35);
+}
+
+.nostalgia-card.modern-holo .nostalgia-section strong {
+  color: #7dd3fc;
+}
+
+/* Üst Bar Keşif ve Onarım İlerleme Çubuğu */
+.top-progress {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 245px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  box-shadow: 0 6px 20px rgba(2, 6, 23, 0.45);
+  backdrop-filter: blur(8px);
+}
+
+.top-progress-text {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+.top-progress-text strong {
+  color: #4ade80;
+  font-size: 13px;
+  letter-spacing: 0.4px;
+}
+
+.top-progress-bar {
+  width: 100%;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.22);
+  overflow: hidden;
+}
+
+.top-progress-fill {
+  width: 0%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #38bdf8, #4ade80, #fde047);
+  box-shadow: 0 0 10px rgba(74, 222, 128, 0.6);
+  transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Zaman Çubuğu Üzerinde Düşük Yerçekimli Yürüyen Astronot */
+.timeline-astronaut {
+  position: absolute;
+  top: -60px;
+  left: 72px;
+  width: 58px;
+  height: 66px;
+  pointer-events: none;
+  z-index: 25;
+  transform: translateX(-50%);
+  transition: left 0.88s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: left;
+}
+
+.timeline-astro-flip {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  transform: scaleX(1);
+  transition: transform 0.22s ease;
+}
+
+.timeline-astro-svg {
+  width: 56px;
+  height: 62px;
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.55)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.72));
+  transform-origin: center bottom;
+  animation: timelineAstroIdle 2.8s ease-in-out infinite;
+}
+
+.timeline-astro-shadow {
+  width: 28px;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: rgba(56, 189, 248, 0.52);
+  filter: blur(2px);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.timeline-astronaut.walking .timeline-astro-svg {
+  animation: timelineLowGravHop 0.88s cubic-bezier(0.32, 0.94, 0.42, 1) forwards;
+}
+
+.timeline-astronaut.walking .timeline-astro-shadow {
+  transform: scaleX(0.5);
+  opacity: 0.25;
+}
+
+@keyframes timelineAstroIdle {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes timelineLowGravHop {
+  0% {
+    transform: translateY(0) scale(1, 1) rotate(0deg);
+  }
+
+  12% {
+    transform: translateY(3px) scale(1.06, 0.92) rotate(-3deg);
+  }
+
+  28% {
+    transform: translateY(-20px) scale(0.96, 1.05) rotate(6deg);
+  }
+
+  46% {
+    transform: translateY(-4px) scale(1.03, 0.96) rotate(-2deg);
+  }
+
+  66% {
+    transform: translateY(-22px) scale(0.96, 1.05) rotate(5deg);
+  }
+
+  84% {
+    transform: translateY(-6px) scale(1.02, 0.98) rotate(-3deg);
+  }
+
+  100% {
+    transform: translateY(0) scale(1, 1) rotate(0deg);
+  }
+}
+
+/* Görev Simülasyonu: Güneş Paneli Toz Temizleme Mini Oyunu */
+.repair-sim-box {
+  margin-top: 18px;
+  padding: 15px;
+  border-radius: 14px;
+  background: linear-gradient(155deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.78));
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  box-shadow: 0 10px 26px rgba(2, 6, 23, 0.45);
+}
+
+.repair-sim-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.repair-sim-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fde047;
+  letter-spacing: 0.2px;
+}
+
+.repair-sim-status {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.2);
+  color: #fcd34d;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+}
+
+.repair-sim-status.done {
+  background: rgba(34, 197, 94, 0.2);
+  color: #86efac;
+  border-color: rgba(34, 197, 94, 0.55);
+}
+
+.repair-sim-hint {
+  font-size: 12.5px;
+  color: #cbd5e1;
+  line-height: 1.45;
+  margin-bottom: 10px;
+}
+
+.repair-stage {
+  position: relative;
+  width: 100%;
+  height: 192px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid rgba(251, 146, 60, 0.45);
+  background: radial-gradient(circle at 50% 42%, #1e293b 0%, #090d16 100%);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.repair-stage.repaired-glow {
+  border-color: #22c55e;
+  box-shadow: 0 0 24px rgba(34, 197, 94, 0.55), inset 0 0 18px rgba(34, 197, 94, 0.22);
+}
+
+.repair-pristine-layer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.repair-pristine-layer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    118deg,
+    rgba(255, 255, 255, 0) 24%,
+    rgba(125, 211, 252, 0.16) 44%,
+    rgba(254, 240, 138, 0.18) 50%,
+    rgba(255, 255, 255, 0) 68%
+  );
+  pointer-events: none;
+}
+
+.repair-pristine-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+  filter: brightness(1.1) contrast(1.08) saturate(1.15);
+}
+
+.pristine-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(20, 83, 45, 0.88);
+  border: 1px solid #4ade80;
+  color: #dcfce7;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
+.pristine-new-tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: rgba(56, 189, 248, 0.22);
+  border: 1px solid rgba(125, 211, 252, 0.7);
+  color: #e0f2fe;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+  pointer-events: none;
+}
+
+.dust-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  cursor: grab;
+  transition: opacity 0.55s ease;
+}
+
+.dust-canvas:active {
+  cursor: grabbing;
+}
+
+.dust-canvas.cleared {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.repair-energy-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  margin-bottom: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.repair-energy-row strong {
+  color: #fbbf24;
+  font-size: 13px;
+}
+
+.repair-energy-row strong.full {
+  color: #4ade80;
+}
+
+.repair-energy-bar {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  overflow: hidden;
+}
+
+.repair-energy-fill {
+  width: 0%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f97316, #facc15, #22c55e);
+  transition: width 0.14s ease-out;
+}
+
+.repair-notification {
+  margin-top: 12px;
+  padding: 11px 13px;
+  border-radius: 10px;
+  background: rgba(20, 83, 45, 0.35);
+  border: 1px solid rgba(74, 222, 128, 0.6);
+  color: #dcfce7;
+  font-size: 13px;
+  line-height: 1.5;
+  animation: repairPopIn 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.repair-notification.hidden,
+.repair-science-note.hidden {
+  display: none;
+}
+
+.repair-thank-you {
+  margin-top: 6px;
+  color: #bae6fd;
+  font-size: 12.5px;
+}
+
+.repair-science-note {
+  margin-top: 9px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.65);
+  border-left: 3px solid #38bdf8;
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@keyframes repairPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Üst Bar Hızlı Demo Butonu */
+.top-progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.quick-demo-btn {
+  pointer-events: auto;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(250, 204, 21, 0.55);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.24), rgba(56, 189, 248, 0.2));
+  color: #fde047;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.quick-demo-btn:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.42), rgba(56, 189, 248, 0.32));
+  box-shadow: 0 0 14px rgba(250, 204, 21, 0.45);
+}
+
+/* Final Ödülü: Cam Efektli Kutlama Modalı */
+.celebration-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(2, 6, 23, 0.78);
+  backdrop-filter: blur(12px);
+}
+
+.celebration-modal.hidden {
+  display: none;
+}
+
+.celebration-card {
+  width: 100%;
+  max-width: 520px;
+  padding: 28px 26px;
+  border-radius: 22px;
+  background: linear-gradient(155deg, rgba(15, 23, 42, 0.94), rgba(30, 41, 59, 0.88));
+  border: 1.5px solid rgba(250, 204, 21, 0.58);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.68), 0 0 42px rgba(56, 189, 248, 0.25);
+  text-align: center;
+  animation: repairPopIn 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.celebration-badge {
+  display: inline-block;
+  padding: 5px 13px;
+  border-radius: 999px;
+  background: rgba(250, 204, 21, 0.16);
+  border: 1px solid rgba(250, 204, 21, 0.55);
+  color: #fde047;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+  margin-bottom: 14px;
+}
+
+.celebration-title {
+  font-size: 20px;
+  line-height: 1.38;
+  color: #f8fafc;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.celebration-sub {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #cbd5e1;
+  margin-bottom: 18px;
+}
+
+.celebration-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.explorer-name-input {
+  width: 100%;
+  padding: 13px 16px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(56, 189, 248, 0.5);
+  background: rgba(2, 6, 23, 0.75);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.explorer-name-input::placeholder {
+  color: #64748b;
+}
+
+.explorer-name-input:focus {
+  border-color: #fde047;
+  box-shadow: 0 0 18px rgba(250, 204, 21, 0.28);
+}
+
+.celebration-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.plant-flag-btn {
+  flex: 1;
+  min-width: 240px;
+  padding: 13px 18px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #e11d48, #f59e0b);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(225, 29, 72, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.plant-flag-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(245, 158, 11, 0.45);
+}
+
+.celebration-close-btn {
+  padding: 13px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.85);
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.celebration-close-btn:hover {
+  background: rgba(30, 41, 59, 0.95);
+}
+
+/* Sağ Panel Uzay Kaşifi Sertifika Kartı */
+.victory-banner {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(225, 29, 72, 0.22), rgba(245, 158, 11, 0.18));
+  border: 1px solid rgba(250, 204, 21, 0.5);
+  margin-bottom: 14px;
+}
+
+.victory-banner h3 {
+  font-size: 16px;
+  color: #fde047;
+  margin-bottom: 4px;
+}
+
+.victory-banner p {
+  font-size: 12.5px;
+  color: #e2e8f0;
+  line-height: 1.45;
+}
+
+.certificate-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(9, 14, 28, 0.9);
+  border: 1.5px solid rgba(250, 204, 21, 0.48);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.5);
+}
+
+.certificate-canvas {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1000 / 700;
+  display: block;
+  border-radius: 10px;
+  border: 1.5px solid rgba(250, 204, 21, 0.65);
+  background: #04081a;
+}
+
+.download-certificate-btn {
+  width: 100%;
+  padding: 13px 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(250, 204, 21, 0.65);
+  background: linear-gradient(135deg, #0ea5e9, #22c55e);
+  color: #04101f;
+  font-size: 14.5px;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 0.2px;
+  box-shadow: 0 8px 22px rgba(34, 197, 94, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.download-certificate-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(56, 189, 248, 0.45);
+}
+
+/* Tek Çizgi Film Astronot Zafer Sahnesi (Sola Koşu -> 1 Tur Dönüş -> Bayrak Saplama & Zafer Pozu) */
+.victory-scene-overlay {
+  --victory-rim-inset: 18px;
+  position: absolute;
+  transform: translate(-50%, calc(-100% + var(--victory-rim-inset)));
+  pointer-events: none;
+  z-index: 26;
+}
+
+.victory-pole-stage {
+  --victory-run-cycle: 0.94s;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 240px;
+  height: 224px;
+  padding-bottom: 4px;
+}
+
+.victory-pole-stage::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 128px;
+  height: 15px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(2, 6, 23, 0.72) 0%, rgba(2, 6, 23, 0) 75%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.victory-footprints-layer {
+  position: absolute;
+  left: 50%;
+  bottom: -2px;
+  transform: translateX(-50%);
+  width: 240px;
+  height: 36px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.victory-gold-footprint {
+  position: absolute;
+  left: 118px;
+  bottom: 4px;
+  width: 15px;
+  height: 7px;
+  border-radius: 999px;
+  background: radial-gradient(circle, #fef08a 15%, #f59e0b 85%);
+  box-shadow: 0 0 12px rgba(250, 204, 21, 0.95), 0 0 4px rgba(255, 255, 255, 0.7);
+  animation: victoryFootprintGlide 1.15s ease-out forwards;
+}
+
+.victory-dust-layer {
+  position: absolute;
+  left: 44%;
+  bottom: 2px;
+  width: 96px;
+  height: 44px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.victory-dust-particle {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(248, 250, 252, 0.85) 0%, rgba(203, 213, 225, 0.35) 55%, rgba(148, 163, 184, 0) 75%);
+  animation: victoryPlantDust 0.82s ease-out forwards;
+}
+
+.victory-astro {
+  position: relative;
+  top: 6px;
+  z-index: 3;
+  width: 118px;
+  height: 132px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.55));
+  transition: transform 0.28s ease-out;
+}
+
+.victory-astro .astro-svg {
+  display: block;
+  transform-origin: center bottom;
+}
+
+.victory-astro .astro-leg-left {
+  transform-origin: 73px 107px;
+}
+
+.victory-astro .astro-leg-right {
+  transform-origin: 64px 107px;
+}
+
+.victory-astro .astro-arm-left {
+  transform-origin: 78px 85px;
+  transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.victory-astro .astro-arm-right {
+  transform-origin: 64px 83px;
+  transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Durum 1: Sola Doğru Yavaş ve Belirgin Düşük Yerçekimli Koşu */
+.victory-astro.running .astro-svg,
+.victory-astro.walking .astro-svg {
+  animation: victoryRunLean var(--victory-run-cycle) ease-in-out infinite;
+}
+
+.victory-astro.running .astro-leg-left,
+.victory-astro.walking .astro-leg-left {
+  animation: astroStrideA var(--victory-run-cycle) ease-in-out infinite alternate;
+}
+
+.victory-astro.running .astro-leg-right,
+.victory-astro.walking .astro-leg-right {
+  animation: astroStrideB var(--victory-run-cycle) ease-in-out infinite alternate;
+}
+
+.victory-astro.running .astro-arm-left,
+.victory-astro.walking .astro-arm-left {
+  animation: astroStrideB var(--victory-run-cycle) ease-in-out infinite alternate;
+}
+
+.victory-astro.running .astro-arm-right,
+.victory-astro.walking .astro-arm-right {
+  animation: astroHoldFlagArm var(--victory-run-cycle) ease-in-out infinite;
+}
+
+/* Durum 2: Bayrağı Yukarı Kaldırıp Güçlü Hareketle Ay Yüzeyine Saplama */
+.victory-astro.planting-flag {
+  animation: astroPlantAction 1.12s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.victory-astro.planting-flag .astro-arm-left {
+  animation: astroPlantBackArm 1.12s ease-in-out forwards;
+}
+
+.victory-astro.planting-flag .astro-arm-right {
+  animation: astroPlantArmThrust 1.12s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Durum 3: Bayrak Yanında Gururlu Zafer Pozu (El/Başparmak Havada) */
+.victory-astro.victory-pose .astro-svg {
+  animation: astroCheer 2.4s ease-in-out infinite;
+}
+
+.victory-astro.victory-pose .astro-arm-left {
+  transform: rotate(18deg) translateY(-4px);
+}
+
+.victory-astro.victory-pose .astro-arm-right {
+  transform: rotate(18deg);
+}
+
+.victory-flag-wrap {
+  position: relative;
+  z-index: 4;
+  width: 12px;
+  margin-right: -8px;
+  margin-bottom: 4px;
+  height: 210px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  transform-origin: 6px bottom;
+  transition: transform 0.38s ease, margin-right 0.38s ease;
+}
+
+.victory-flag-wrap.carried {
+  opacity: 1;
+  margin-right: -30px;
+  transform: translate(16px, -34px) rotate(-24deg);
+  animation: carriedFlagBob var(--victory-run-cycle) ease-in-out infinite;
+}
+
+.victory-flag-wrap.carried .flag-soil-mound,
+.victory-flag-wrap.carried .flag-soil-ring {
+  opacity: 0;
+  transform: scale(0.2);
+}
+
+.victory-flag-wrap.planted {
+  position: absolute;
+  left: calc(50% + var(--victory-flag-surface-x, 0px) - 6px);
+  bottom: calc(var(--victory-rim-inset) - var(--victory-flag-surface-y, 0px) - 6px);
+  margin: 0;
+  opacity: 1;
+  animation: flagPolePlantDrop 1.12s cubic-bezier(0.22, 1.25, 0.36, 1) forwards;
+}
+
+.victory-flag-wrap.planted .flag-hand-grip {
+  opacity: 0;
+  transition: opacity 0.25s ease 0.55s;
+}
+
+.victory-flag-pole {
+  position: relative;
+  width: 6px;
+  height: 202px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #cbd5e1 0%, #ffffff 42%, #64748b 78%, #94a3b8 100%);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.75);
+}
+
+.flag-hand-grip {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 13px;
+  border-radius: 7px;
+  background: #ffffff;
+  border: 2.8px solid #23153c;
+  box-shadow: inset 0 -2px 0 #d8d7e8, 0 3px 6px rgba(0, 0, 0, 0.45);
+  z-index: 6;
+}
+
+.victory-pole-finial {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 1.5px solid #92400e;
+  background: radial-gradient(circle at 32% 32%, #fef9c3, #fbbf24 58%, #b45309 100%);
+  box-shadow: 0 0 12px rgba(250, 204, 21, 0.8);
+}
+
+.victory-pole-crossbar {
+  position: absolute;
+  top: 7px;
+  left: 5px;
+  width: 112px;
+  height: 3.5px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #f8fafc, #94a3b8);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
+}
+
+.victory-flag-svg {
+  position: absolute;
+  left: 5px;
+  top: 9px;
+  width: 116px;
+  height: 76px;
+  transform-origin: left center;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.62));
+  animation: turkishFlagClothWave 1.9s ease-in-out infinite;
+}
+
+.flag-soil-ring {
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 64px;
+  height: 20px;
+  margin-left: -32px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(253, 224, 71, 0.92);
+  background: radial-gradient(circle, rgba(254, 240, 138, 0.55) 0%, rgba(226, 232, 240, 0.35) 48%, transparent 74%);
+  box-shadow: 0 0 18px rgba(250, 204, 21, 0.75);
+  opacity: 0;
+}
+
+.flag-soil-mound {
+  position: absolute;
+  left: 50%;
+  bottom: -3px;
+  width: 34px;
+  height: 11px;
+  margin-left: -17px;
+  border-radius: 50% 50% 40% 40%;
+  background: radial-gradient(ellipse at center, #cbd5e1 0%, #64748b 68%, transparent 100%);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.78);
+  opacity: 0;
+}
+
+.victory-scene-overlay[data-planet='mars'] .flag-soil-mound {
+  background: radial-gradient(ellipse at center, #ea580c 0%, #9a3412 72%, transparent 100%);
+}
+
+.victory-flag-wrap.planted .flag-soil-ring {
+  animation: soilBurstRing 0.9s ease-out 0.56s forwards;
+}
+
+.victory-flag-wrap.planted .flag-soil-mound {
+  z-index: 1;
+  animation: soilMoundAppear 0.45s ease-out 0.54s forwards;
+}
+
+@keyframes victoryRunLean {
+  0%,
+  100% {
+    transform: rotate(-3deg);
+  }
+
+  50% {
+    transform: rotate(-1deg);
+  }
+}
+
+@keyframes carriedFlagBob {
+  0%,
+  100% {
+    transform: translate(16px, -34px) rotate(-24deg);
+  }
+  50% {
+    transform: translate(16px, -43px) rotate(-20deg);
+  }
+}
+
+@keyframes astroHoldFlagArm {
+  0%,
+  100% {
+    transform: rotate(12deg) translateY(0);
+  }
+  50% {
+    transform: rotate(18deg) translateY(-3px);
+  }
+}
+
+@keyframes victoryFootprintGlide {
+  0% {
+    opacity: 0.98;
+    transform: translate(0, 0) scale(1);
+  }
+  55% {
+    opacity: 0.72;
+    transform: translate(48px, 6px) scale(0.86);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(92px, 18px) scale(0.5);
+  }
+}
+
+@keyframes victoryPlantDust {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.3);
+  }
+  15% {
+    opacity: 0.98;
+    transform: translate(0, 0) scale(0.55);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx, 24px), var(--dy, -28px)) scale(1.95);
+  }
+}
+
+@keyframes astroPlantAction {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  34% {
+    transform: translate(6px, -22px) rotate(10deg) scale(1.04);
+  }
+  65% {
+    transform: translate(-6px, 12px) rotate(-14deg) scale(1.03);
+  }
+  84% {
+    transform: translate(-2px, -3px) rotate(2deg) scale(1);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+}
+
+@keyframes astroPlantBackArm {
+  0% {
+    transform: rotate(0deg);
+  }
+  34% {
+    transform: rotate(28deg);
+  }
+  65% {
+    transform: rotate(-22deg);
+  }
+  100% {
+    transform: rotate(12deg);
+  }
+}
+
+@keyframes astroPlantArmThrust {
+  0% {
+    transform: translateY(0) rotate(14deg);
+  }
+  34% {
+    transform: translateY(-14px) rotate(52deg);
+  }
+  65% {
+    transform: translateY(10px) rotate(-22deg);
+  }
+  100% {
+    transform: translateY(0) rotate(10deg);
+  }
+}
+
+@keyframes astroLiftPress {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes flagPolePlantDrop {
+  0% {
+    opacity: 1;
+    transform: translate(16px, -34px) rotate(-24deg);
+  }
+  34% {
+    opacity: 1;
+    transform: translate(8px, -86px) rotate(-6deg) scale(1.06);
+  }
+  64% {
+    opacity: 1;
+    transform: translateY(4px) rotate(2deg);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(-2px) rotate(-1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes turkishFlagClothWave {
+  0%,
+  100% {
+    transform: perspective(260px) rotateY(-6deg) skewY(-1deg);
+  }
+  50% {
+    transform: perspective(260px) rotateY(8deg) skewY(1.5deg);
+  }
+}
+
+@keyframes soilBurstRing {
+  0% {
+    opacity: 1;
+    transform: scale(0.25);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.95);
+  }
+}
+
+@keyframes soilMoundAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes certPlaqueHoist {
+  0% {
+    opacity: 0;
+    transform: translateY(46px) scale(0.7);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-6px) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes certPlaqueIdleFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Sağ Panel Üst Navigasyon ve Uzay Albümüm Butonu */
+.panel-top-nav,
+.overview-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.panel-top-nav .back-to-planet-btn {
+  margin-bottom: 0;
+}
+
+.space-album-btn {
+  border: 1px solid rgba(250, 204, 21, 0.55);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.24), rgba(56, 189, 248, 0.22));
+  color: #fef08a;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 8px 11px;
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(2, 6, 23, 0.45);
+  transition: transform 0.18s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.space-album-btn:hover {
+  transform: translateY(-1px);
+  border-color: #fde047;
+  box-shadow: 0 6px 18px rgba(250, 204, 21, 0.3);
+}
+
+.eq-card-top-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.eq-card-status-pill,
+.eq-card-rarity-pill {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 999px;
+  letter-spacing: 0.4px;
+}
+
+.eq-card-status-pill.locked {
+  background: rgba(100, 116, 139, 0.28);
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.eq-card-status-pill.unlocked {
+  background: rgba(16, 185, 129, 0.2);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.55);
+}
+
+.eq-card-rarity-pill {
+  background: rgba(245, 158, 11, 0.18);
+  color: #fde047;
+  border: 1px solid rgba(250, 204, 21, 0.4);
+}
+
+/* Kompakt Telsiz Kaydı & Fütüristik Cam Efektli Ses Oynatıcısı */
+.telsiz-top-row {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.story-audio-player {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(14, 116, 144, 0.26) 0%, rgba(15, 23, 42, 0.86) 100%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(56, 189, 248, 0.38);
+  box-shadow: 0 8px 22px rgba(2, 6, 23, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.story-audio-player.is-playing {
+  border-color: rgba(34, 211, 238, 0.78);
+  box-shadow: 0 8px 24px rgba(8, 145, 178, 0.3), 0 0 14px rgba(34, 211, 238, 0.18);
+}
+
+.story-audio-top {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.story-audio-toggle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(103, 232, 249, 0.55);
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.34), rgba(37, 99, 235, 0.38));
+  color: #f8fafc;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.18s ease, box-shadow 0.2s ease;
+}
+
+.story-audio-toggle:hover {
+  transform: scale(1.06);
+  box-shadow: 0 4px 12px rgba(34, 211, 238, 0.45);
+}
+
+.story-audio-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.story-audio-kicker {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.85px;
+  text-transform: uppercase;
+  color: #67e8f9;
+}
+
+.story-audio-status {
+  margin-top: 1px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.story-audio-eq {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 18px;
+  padding: 2px 5px;
+  border-radius: 7px;
+  background: rgba(15, 23, 42, 0.58);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+}
+
+.story-audio-eq .eq-bar {
+  width: 2.5px;
+  height: 5px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #67e8f9 0%, #38bdf8 55%, #fbbf24 100%);
+  opacity: 0.45;
+  transition: opacity 0.2s ease;
+}
+
+.story-audio-eq.playing .eq-bar {
+  opacity: 1;
+  animation: storyEqPulse 0.72s ease-in-out infinite alternate;
+}
+
+.story-audio-eq.playing .eq-bar:nth-child(2) {
+  animation-delay: 0.14s;
+  animation-duration: 0.58s;
+}
+
+.story-audio-eq.playing .eq-bar:nth-child(3) {
+  animation-delay: 0.28s;
+  animation-duration: 0.82s;
+}
+
+.story-audio-eq.playing .eq-bar:nth-child(4) {
+  animation-delay: 0.08s;
+  animation-duration: 0.64s;
+}
+
+.story-audio-eq.playing .eq-bar:nth-child(5) {
+  animation-delay: 0.22s;
+  animation-duration: 0.76s;
+}
+
+@keyframes storyEqPulse {
+  0% {
+    height: 4px;
+  }
+  50% {
+    height: 14px;
+  }
+  100% {
+    height: 8px;
+  }
+}
+
+.story-audio-bottom {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.story-audio-progress {
+  flex: 1;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.story-audio-progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #22d3ee 0%, #38bdf8 55%, #fbbf24 100%);
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
+  transition: width 0.12s linear;
+}
+
+.story-audio-time {
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #bae6fd;
+  min-width: 72px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* 3D Holografik Koleksiyon Kartı */
+.collectible-card-scene {
+  perspective: 1000px;
+  margin: 6px 0 12px;
+}
+
+.collectible-card {
+  position: relative;
+  min-height: 540px;
+  border-radius: 20px;
+  transform-style: preserve-3d;
+  transition: transform 0.68s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease, border-color 0.4s ease;
+  transform: rotateX(var(--card-rx, 0deg)) rotateY(var(--card-ry, 0deg));
+  will-change: transform;
+}
+
+.collectible-card.flipped {
+  transform: rotateX(var(--card-rx, 0deg)) rotateY(calc(var(--card-ry, 0deg) + 180deg));
+}
+
+.collectible-card.locked {
+  border: 2px solid rgba(148, 163, 184, 0.42);
+  background: linear-gradient(155deg, rgba(51, 65, 85, 0.82), rgba(15, 23, 42, 0.94));
+  box-shadow: 0 14px 34px rgba(2, 6, 23, 0.65), inset 0 0 24px rgba(148, 163, 184, 0.1);
+}
+
+.collectible-card.unlocked-legendary {
+  border: 2px solid #facc15;
+  background: linear-gradient(145deg, rgba(120, 53, 15, 0.45), rgba(15, 23, 42, 0.94) 55%, rgba(8, 145, 178, 0.35));
+  box-shadow:
+    0 16px 38px rgba(2, 6, 23, 0.72),
+    0 0 26px rgba(250, 204, 21, 0.38),
+    0 0 42px rgba(56, 189, 248, 0.24),
+    inset 0 0 28px rgba(253, 224, 71, 0.16);
+}
+
+.card-holo-shimmer {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  pointer-events: none;
+  z-index: 4;
+  opacity: 0.22;
+  background: linear-gradient(
+    118deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.18) 38%,
+    rgba(56, 189, 248, 0.22) 50%,
+    rgba(250, 204, 21, 0.24) 62%,
+    transparent 80%
+  );
+  background-position: var(--shimmer-x, 50%) var(--shimmer-y, 50%);
+  background-size: 220% 220%;
+  mix-blend-mode: screen;
+  transition: opacity 0.35s ease;
+}
+
+.collectible-card.unlocked-legendary .card-holo-shimmer {
+  opacity: 0.65;
+  background: radial-gradient(
+      circle at var(--shimmer-x, 50%) var(--shimmer-y, 50%),
+      rgba(255, 255, 255, 0.34),
+      rgba(56, 189, 248, 0.22) 28%,
+      rgba(250, 204, 21, 0.22) 52%,
+      transparent 75%
+    ),
+    linear-gradient(
+      125deg,
+      rgba(56, 189, 248, 0.16),
+      rgba(250, 204, 21, 0.22),
+      rgba(244, 114, 182, 0.16),
+      rgba(34, 211, 238, 0.16)
+    );
+}
+
+.card-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.card-front {
+  position: relative;
+  z-index: 2;
+}
+
+.card-back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+  overflow-y: auto;
+  z-index: 1;
+  background: linear-gradient(155deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.94));
+}
+
+.collectible-card:not(.flipped) .card-back {
+  pointer-events: none;
+}
+
+.collectible-card.flipped .card-front {
+  pointer-events: none;
+}
+
+.card-front-header,
+.card-back-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.card-rarity-badge {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.9px;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.card-rarity-badge.legendary {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.35), rgba(250, 204, 21, 0.22));
+  color: #fde047;
+  border: 1px solid rgba(250, 204, 21, 0.7);
+}
+
+.card-rarity-badge.epic {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.34), rgba(56, 189, 248, 0.24));
+  color: #ddd6fe;
+  border: 1px solid rgba(167, 139, 250, 0.7);
+}
+
+.card-lock-badge {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 9px;
+  border-radius: 999px;
+}
+
+.card-lock-badge.locked {
+  background: rgba(100, 116, 139, 0.28);
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.card-lock-badge.unlocked {
+  background: rgba(16, 185, 129, 0.22);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.65);
+}
+
+.card-title {
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #f8fafc;
+  margin-bottom: 10px;
+}
+
+.collectible-card.unlocked-legendary .card-title {
+  color: #fef08a;
+  text-shadow: 0 0 14px rgba(250, 204, 21, 0.35);
+}
+
+.card-visual-frame {
+  position: relative;
+  height: 185px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: #020617;
+  margin-bottom: 12px;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.card-vehicle-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: filter 0.6s ease, transform 0.6s ease;
+}
+
+.card-visual-frame.dusty-locked .card-vehicle-img {
+  filter: grayscale(0.72) sepia(0.36) contrast(0.9) brightness(0.78);
+}
+
+.card-visual-frame.restored-pristine {
+  border-color: rgba(250, 204, 21, 0.85);
+  box-shadow: 0 0 22px rgba(250, 204, 21, 0.35), inset 0 0 18px rgba(34, 211, 238, 0.25);
+}
+
+.card-visual-frame.restored-pristine .card-vehicle-img {
+  filter: brightness(1.16) contrast(1.08) saturate(1.22);
+  transform: scale(1.03);
+}
+
+.card-scanline-flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(110deg, transparent 20%, rgba(34, 211, 238, 0.55) 48%, rgba(250, 204, 21, 0.65) 56%, transparent 80%);
+  transform: translateX(-100%);
+}
+
+.collectible-card.just-unlocked .card-scanline-flash {
+  animation: cardPristineScan 0.9s ease-out forwards;
+}
+
+@keyframes cardPristineScan {
+  0% {
+    opacity: 0.9;
+    transform: translateX(-100%);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(120%);
+  }
+}
+
+.card-visual-status {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  padding: 5px 10px;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+  background: rgba(2, 6, 23, 0.84);
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.card-visual-frame.restored-pristine .card-visual-status {
+  background: linear-gradient(90deg, rgba(6, 78, 59, 0.9), rgba(14, 116, 144, 0.9));
+  color: #fef08a;
+  border-color: rgba(250, 204, 21, 0.65);
+}
+
+.card-locks-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card-lock-feedback {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 10px;
+  border-radius: 10px;
+  background: rgba(30, 41, 59, 0.78);
+  color: #bae6fd;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.card-lock-feedback.error {
+  background: rgba(127, 29, 29, 0.55);
+  color: #fecaca;
+  border-color: rgba(248, 113, 113, 0.7);
+}
+
+.card-lock-feedback.success {
+  background: rgba(6, 78, 59, 0.52);
+  color: #a7f3d0;
+  border-color: rgba(16, 185, 129, 0.7);
+}
+
+.card-lock-box {
+  padding: 9px 10px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.76);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  transition: border-color 0.25s ease, background 0.25s ease;
+}
+
+.card-lock-box.lock-solved {
+  border-color: #10b981;
+  background: rgba(6, 78, 59, 0.34);
+}
+
+.card-lock-box.shake-error {
+  border-color: #ef4444;
+  background: rgba(127, 29, 29, 0.34);
+  animation: cardLockShake 0.42s ease;
+}
+
+@keyframes cardLockShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-7px);
+  }
+  40% {
+    transform: translateX(7px);
+  }
+  60% {
+    transform: translateX(-5px);
+  }
+  80% {
+    transform: translateX(5px);
+  }
+}
+
+.card-lock-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: #e2e8f0;
+  margin-bottom: 7px;
+}
+
+.card-lock-box.lock-solved .card-lock-title {
+  color: #6ee7b7;
+}
+
+.lock-options-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lock-option-chip {
+  flex: 1 1 auto;
+  min-width: 112px;
+  padding: 6px 9px;
+  border-radius: 9px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(30, 41, 59, 0.9);
+  color: #f1f5f9;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.14s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.lock-option-chip:hover {
+  transform: translateY(-1px);
+  border-color: #38bdf8;
+  background: rgba(30, 64, 175, 0.4);
+}
+
+.lock-option-chip.correct-choice {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.28);
+  color: #ecfdf5;
+  font-weight: 800;
+}
+
+.lock-option-chip.wrong-choice {
+  border-color: rgba(248, 113, 113, 0.7);
+  background: rgba(127, 29, 29, 0.42);
+  color: #fecaca;
+}
+
+.flip-card-btn {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 13px;
+  border: 1px solid rgba(250, 204, 21, 0.8);
+  background: linear-gradient(135deg, #f59e0b 0%, #06b6d4 100%);
+  color: #020617;
+  font-size: 13.5px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(245, 158, 11, 0.35);
+  transition: transform 0.18s ease, opacity 0.25s ease, box-shadow 0.25s ease;
+}
+
+.flip-card-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(250, 204, 21, 0.45);
+}
+
+.flip-card-btn.locked-btn,
+.flip-card-btn:disabled {
+  background: rgba(51, 65, 85, 0.72);
+  color: #94a3b8;
+  border-color: rgba(148, 163, 184, 0.28);
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+/* Kart Arka Yüzü: NSSDCA, FIFA Stat Barları, Gizli Sır, Hikâye Akordeonu */
+.card-back-kicker {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #67e8f9;
+  letter-spacing: 0.6px;
+}
+
+.card-back-flip-btn {
+  border: 1px solid rgba(56, 189, 248, 0.55);
+  background: rgba(14, 116, 144, 0.34);
+  color: #e0f2fe;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.card-back-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #fef08a;
+  margin-bottom: 10px;
+}
+
+.card-nssdca-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.card-nssdca-cell {
+  background: rgba(30, 41, 59, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 10px;
+  padding: 7px 10px;
+}
+
+.card-nssdca-cell label {
+  display: block;
+  font-size: 10px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.card-nssdca-cell strong {
+  font-size: 12.5px;
+  color: #f8fafc;
+}
+
+.card-stats-box {
+  background: rgba(2, 6, 23, 0.58);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 13px;
+  padding: 11px 12px;
+  margin-bottom: 12px;
+}
+
+.card-stats-heading {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+  color: #38bdf8;
+  margin-bottom: 9px;
+}
+
+.card-stat-row {
+  display: grid;
+  grid-template-columns: 112px 1fr 30px;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 7px;
+}
+
+.card-stat-row:last-child {
+  margin-bottom: 0;
+}
+
+.card-stat-row strong {
+  text-align: right;
+  color: #fde047;
+  font-variant-numeric: tabular-nums;
+}
+
+.card-stat-bar {
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(30, 41, 59, 0.9);
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.card-stat-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.card-stat-fill.stat-durability {
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.card-stat-fill.stat-science {
+  background: linear-gradient(90deg, #0ea5e9, #67e8f9);
+}
+
+.card-stat-fill.stat-courage {
+  background: linear-gradient(90deg, #f59e0b, #fde047);
+}
+
+.card-secret-box {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(120, 53, 15, 0.35));
+  border: 1px solid rgba(250, 204, 21, 0.7);
+  border-left: 4px solid #facc15;
+  border-radius: 12px;
+  padding: 11px 13px;
+  margin-bottom: 12px;
+}
+
+.card-secret-title {
+  font-size: 11.5px;
+  font-weight: 900;
+  color: #fde047;
+  letter-spacing: 0.7px;
+  margin-bottom: 5px;
+}
+
+.card-secret-text {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #fef3c7;
+}
+
+.story-accordion {
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.68);
+  overflow: hidden;
+}
+
+.story-accordion-summary {
+  list-style: none;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #fde68a;
+  cursor: pointer;
+}
+
+.story-accordion[open] .story-accordion-summary {
+  border-bottom: 1px solid rgba(245, 158, 11, 0.28);
+}
+
+.story-accordion .story-box {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 14px;
+}
+
+/* 3x3 Uzay Albümü Izgarası */
+.album-count-pill {
+  font-size: 12px;
+  font-weight: 800;
+  color: #fde047;
+  background: rgba(245, 158, 11, 0.18);
+  border: 1px solid rgba(250, 204, 21, 0.5);
+  padding: 5px 10px;
+  border-radius: 999px;
+}
+
+.space-album-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.album-mini-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 7px;
+  border-radius: 14px;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.18s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.album-mini-card:hover {
+  transform: translateY(-3px);
+}
+
+.album-mini-card.unlocked {
+  border: 1.5px solid #facc15;
+  background: linear-gradient(155deg, rgba(120, 53, 15, 0.45), rgba(15, 23, 42, 0.92));
+  box-shadow: 0 6px 18px rgba(250, 204, 21, 0.24);
+}
+
+.album-mini-card.locked {
+  border: 1.5px dashed rgba(148, 163, 184, 0.4);
+  background: rgba(15, 23, 42, 0.82);
+}
+
+.album-mini-planet {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #bae6fd;
+}
+
+.album-mini-rarity {
+  font-size: 9px;
+  font-weight: 900;
+  color: #fde047;
+}
+
+.album-mystery-mark {
+  font-size: 15px;
+  font-weight: 900;
+  color: #94a3b8;
+  line-height: 1;
+}
+
+.album-mini-thumb-wrap {
+  width: 100%;
+  height: 58px;
+  border-radius: 9px;
+  overflow: hidden;
+  background: #020617;
+}
+
+.album-mini-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.album-mini-card.locked .album-mini-thumb {
+  filter: grayscale(1) brightness(0.28) contrast(1.1);
+}
+
+.album-mini-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #f8fafc;
+  line-height: 1.2;
+}
+
+.album-mini-state {
+  font-size: 10px;
+  font-weight: 800;
+  color: #6ee7b7;
+}
+
+.album-mini-card.locked .album-mini-state {
+  color: #94a3b8;
+}
+
+.album-complete-banner {
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 14px;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(245, 158, 11, 0.24));
+  border: 1px solid rgba(250, 204, 21, 0.65);
+}
+
+.album-complete-banner p {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fef08a;
+  margin-bottom: 10px;
+}
+
+/* =========================================
+   BİTİRİŞ & ZAFER EKRANI (İKİ BÖLÜMLÜ PANEL + AY/MARS GEÇİŞ BAR)
+   ========================================= */
+.info-panel.victory-mode {
+  width: min(49vw, 660px);
+  top: 82px;
+  bottom: 24px;
+  padding: 20px 22px;
+  background: rgba(7, 13, 30, 0.9);
+  border: 1.5px solid rgba(250, 204, 21, 0.44);
+  box-shadow: -14px 0 48px rgba(0, 0, 0, 0.72), inset 0 0 28px rgba(250, 204, 21, 0.06);
+}
+
+.cosmic-timeline.victory-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(28px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.victory-panel-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.reset-explorer-btn {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(251, 191, 36, 0.6);
+  background: rgba(245, 158, 11, 0.16);
+  color: #fef08a;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reset-explorer-btn:hover {
+  background: rgba(245, 158, 11, 0.32);
+  border-color: #fde047;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.28);
+}
+
+/* Sol Üst 3B Sahne Üzeri Ay / Mars Geçiş Kontrolü */
+.victory-planet-switch-container,
+.victory-scene-overlay.switcher-overlay {
+  position: fixed;
+  top: 86px;
+  left: 28px;
+  transform: none;
+  pointer-events: auto;
+  z-index: 28;
+}
+
+.victory-planet-switch-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: rgba(9, 15, 34, 0.88);
+  border: 1px solid rgba(250, 204, 21, 0.45);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+  pointer-events: auto;
+}
+
+.victory-planet-pill {
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(30, 41, 59, 0.72);
+  color: #cbd5e1;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.victory-planet-pill:hover {
+  border-color: rgba(56, 189, 248, 0.6);
+  color: #ffffff;
+}
+
+.victory-planet-pill.active {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.88), rgba(234, 88, 12, 0.88));
+  border-color: #fde047;
+  color: #091022;
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.45);
+}
+
+.victory-planet-toggle-btn {
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  background: rgba(14, 165, 233, 0.16);
+  color: #bae6fd;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.victory-planet-toggle-btn:hover {
+  background: rgba(14, 165, 233, 0.32);
+  color: #ffffff;
+}
+
+/* Sağ Zafer Paneli: Üst Sertifika Bölümü + Alt 9/9 Koleksiyon Albümü */
+.victory-banner-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.victory-serial-badge {
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #fef08a;
+  background: rgba(250, 204, 21, 0.14);
+  border: 1px solid rgba(250, 204, 21, 0.45);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+.victory-cert-section {
+  margin-bottom: 16px;
+}
+
+.victory-collection-album {
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(11, 18, 38, 0.88);
+  border: 1.5px solid rgba(250, 204, 21, 0.42);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+.victory-album-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.victory-album-header h4 {
+  font-size: 14px;
+  color: #fde047;
+  font-weight: 800;
+}
+
+.victory-album-header span {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #6ee7b7;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.victory-album-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.victory-mini-badge-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 5px;
+  padding: 8px 6px 9px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(250, 204, 21, 0.7);
+  background: linear-gradient(155deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.96));
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.14);
+  cursor: pointer;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  overflow: hidden;
+}
+
+.victory-mini-badge-card:hover,
+.victory-mini-badge-card:focus-visible {
+  transform: translateY(-3px) scale(1.02);
+  border-color: #fde047;
+  box-shadow: 0 10px 24px rgba(250, 204, 21, 0.34);
+  outline: none;
+}
+
+.victory-mini-thumb-wrap {
+  width: 100%;
+  height: 52px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(250, 204, 21, 0.38);
+  background: #020617;
+}
+
+.victory-mini-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.victory-mini-name {
+  font-size: 11px;
+  font-weight: 800;
+  color: #fef3c7;
+  line-height: 1.2;
+}
+
+.victory-badge-title {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background: rgba(6, 11, 26, 0.93);
+  color: #fde047;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.3;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.victory-mini-badge-card:hover .victory-badge-title,
+.victory-mini-badge-card:focus-visible .victory-badge-title {
+  opacity: 1;
+  transform: translateY(0);
+}

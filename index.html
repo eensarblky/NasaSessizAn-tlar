@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sessiz Anıtlar | NASA'nın Uzaydaki Unutulmayan Mirası</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Three.js Kütüphanesi -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+
+<body>
+  <!-- Üst Başlık ve Geri Dön Butonu -->
+  <header class="top-bar">
+    <div class="brand">
+      <span class="badge">NASA SPACE APPS 2026</span>
+      <h1>Sessiz Anıtlar: Uzaydaki İzlerimiz</h1>
+    </div>
+    <div id="progress-widget" class="top-progress" aria-live="polite">
+      <div class="top-progress-row">
+        <div class="top-progress-text">
+          <span>🏆 Keşfedilen Anıt:</span>
+          <strong id="repaired-count-label">0 / 9</strong>
+        </div>
+        <button id="quick-demo-btn" class="quick-demo-btn" type="button" title="Jüri sunumu için tüm görevleri tamamla">
+          ⚡ Hızlı Demo: Görevi Tamamla
+        </button>
+      </div>
+      <div class="top-progress-bar">
+        <div id="top-progress-fill" class="top-progress-fill"></div>
+      </div>
+    </div>
+    <button id="reset-btn" class="hidden">← Gezegen Seçimine Dön</button>
+  </header>
+
+  <!-- Açılış Yönergesi -->
+  <div id="intro-hint" class="intro-hint">
+    Keşfetmek istediğin gök cismine tıkla (<strong>Ay</strong> veya <strong>Mars</strong>)
+  </div>
+
+  <!-- 3B Uzay Sahnesi -->
+  <div id="canvas-container"></div>
+
+  <!-- Gezegen Üzerindeki Araç Pinleri (Dinamik Oluşur) -->
+  <div id="pins-container"></div>
+
+  <!-- Sağ Bilgi ve Hikâye Paneli -->
+  <aside id="info-panel" class="info-panel">
+    <div id="panel-content">
+      <!-- JavaScript ile dinamik doldurulacak -->
+    </div>
+  </aside>
+
+  <!-- Sol Alt Nostaljik Gazete Manşeti / Dijital Anı Kartı -->
+  <aside id="nostalgia-card" class="nostalgia-card hidden" aria-live="polite"></aside>
+
+  <!-- Alt Yatay Kaydırılabilir Kozmik Zaman Çubuğu -->
+  <nav id="cosmic-timeline" class="cosmic-timeline" aria-label="Kozmik Zaman Çubuğu">
+    <div id="timeline-astronaut" class="timeline-astronaut" aria-hidden="true"></div>
+    <button id="timeline-prev" class="timeline-nav-btn" type="button" title="Önceki Yıl">◀</button>
+    <div id="timeline-track" class="timeline-track">
+      <!-- JavaScript ile 1966-2021 yıl noktaları oluşturulacak -->
+    </div>
+    <button id="timeline-next" class="timeline-nav-btn" type="button" title="Sonraki Yıl">▶</button>
+  </nav>
+
+  <!-- Final Ödülü: Kutlama ve İsim Giriş Modalı -->
+  <div id="celebration-modal" class="celebration-modal hidden" role="dialog" aria-modal="true" aria-labelledby="celebration-title">
+    <div class="celebration-card">
+      <div class="celebration-badge">🏆 GÖREV TAMAMLANDI • 9 / 9 ANIT KEŞFEDİLDİ</div>
+      <h2 id="celebration-title" class="celebration-title">
+        Tebrikler Uzay Kaşifi! Ay ve Mars'taki tüm sessiz anıtları yeniden hayata döndürdün.
+      </h2>
+      <p class="celebration-sub">
+        Adını yaz; senin için gezegenin yüzeyine ay-yıldızlı Türk Bayrağı dikelim ve resmî Uzay Kaşifi Sertifikanı oluşturalım!
+      </p>
+      <form id="celebration-form" class="celebration-form">
+        <input
+          id="explorer-name-input"
+          class="explorer-name-input"
+          type="text"
+          maxlength="42"
+          placeholder="Ad Soyad"
+          required
+        />
+        <div class="celebration-actions">
+          <button id="plant-flag-btn" class="plant-flag-btn" type="submit">
+            🏆 Zafer Ekranını Aç
+          </button>
+          <button id="close-celebration-btn" class="celebration-close-btn" type="button">
+            Kapat
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
